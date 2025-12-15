@@ -4,6 +4,7 @@ use axum::{
     Json,
 };
 use serde::Serialize;
+use std::fmt;
 use uuid::Uuid;
 
 #[derive(Debug, Serialize)]
@@ -59,6 +60,14 @@ impl ApiError {
         Self::new("RATE_LIMIT_EXCEEDED", message)
     }
 }
+
+impl fmt::Display for ApiError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "[{}] {} (trace_id: {})", self.code, self.message, self.trace_id)
+    }
+}
+
+impl std::error::Error for ApiError {}
 
 impl IntoResponse for ApiError {
     fn into_response(self) -> Response {
