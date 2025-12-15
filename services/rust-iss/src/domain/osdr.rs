@@ -21,3 +21,12 @@ pub struct OsdrItemInput {
     pub updated_at: Option<DateTime<Utc>>,
     pub raw: Value,
 }
+
+#[derive(Debug, Clone)]
+pub struct OsdrInsert {
+    pub dataset_id: String,
+    pub title: Option<String>,
+    pub status: Option<String>,
+    pub updated_at: Option<DateTime<Utc>>,
+    pub raw: Value,
+}
