@@ -117,10 +117,10 @@ services:
     ports:
       - "8080:80"
 
-  pascal_legacy:
+  telemetry_generator:
     build:
-      context: ./services/pascal-legacy
-    container_name: pascal_legacy
+      context: ./services/telemetry-generator
+    container_name: telemetry_generator
     environment:
       CSV_OUT_DIR: /data/csv
       GEN_PERIOD_SEC: ${LEGACY_PERIOD:-300}
@@ -129,6 +129,7 @@ services:
       PGUSER: ${DB_USER:-cassiopeia_user}
       PGPASSWORD: ${DB_PASSWORD:-cassiopeia_pass}
       PGDATABASE: ${DB_NAME:-cassiopeia}
+      RUST_LOG: info
     depends_on:
       db:
         condition: service_healthy
