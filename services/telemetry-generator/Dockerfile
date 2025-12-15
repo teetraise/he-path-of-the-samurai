@@ -1,5 +1,5 @@
 # Multi-stage build for Rust telemetry generator
-FROM rust:1.75-slim as builder
+FROM rust:1.83-slim as builder
 
 WORKDIR /build
 
