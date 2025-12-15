@@ -5,17 +5,34 @@ volumes:
   pgdata:
   appdata:
   csvdata:
+  redisdata:
 
 services:
+  redis:
+    image: redis:7-alpine
+    container_name: iss_redis
+    command: redis-server --requirepass ${REDIS_PASSWORD:-redispass}
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    volumes:
+      - redisdata:/data
+    networks:
+      - backend
+    ports:
+      - "6379:6379"
+
   db:
     image: postgres:16
     container_name: iss_db
     environment:
-      POSTGRES_DB: monolith
-      POSTGRES_USER: monouser
-      POSTGRES_PASSWORD: monopass
+      POSTGRES_DB: ${DB_NAME:-cassiopeia}
+      POSTGRES_USER: ${DB_USER:-cassiopeia_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-cassiopeia_pass}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U monouser -d monolith"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-cassiopeia_user} -d ${DB_NAME:-cassiopeia}"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -32,13 +49,23 @@ services:
       context: ./services/rust-iss
     container_name: rust_iss
     environment:
-      DATABASE_URL: ${DATABASE_URL:-postgres://monouser:monopass@db:5432/monolith}
-      NASA_API_URL: ${NASA_API_URL:-}
-      NASA_API_KEY: ${NASA_API_KEY:-}
-      FETCH_EVERY_SECONDS: ${FETCH_EVERY_SECONDS:-600}
-      WHERE_ISS_URL: ${WHERE_ISS_URL:-https://api.wheretheiss.at/v1/satellites/25544}
+      DATABASE_URL: postgres://${DB_USER:-cassiopeia_user}:${DB_PASSWORD:-cassiopeia_pass}@db:5432/${DB_NAME:-cassiopeia}
+      REDIS_URL: redis://:${REDIS_PASSWORD:-redispass}@redis:6379
+      NASA_API_URL: ${NASA_API_URL:-https://visualization.osdr.nasa.gov/biodata/api/v2/datasets/?format=json}
+      NASA_API_KEY: ${NASA_API_KEY:-DEMO_KEY}
+      WHERE_ISS_URL: ${ISS_API_URL:-https://api.wheretheiss.at/v1/satellites/25544}
+      ISS_SYNC_INTERVAL: ${ISS_SYNC_INTERVAL:-120}
+      OSDR_SYNC_INTERVAL: ${OSDR_SYNC_INTERVAL:-600}
+      APOD_SYNC_INTERVAL: ${APOD_SYNC_INTERVAL:-43200}
+      NEO_SYNC_INTERVAL: ${NEO_SYNC_INTERVAL:-7200}
+      DONKI_SYNC_INTERVAL: ${DONKI_SYNC_INTERVAL:-3600}
+      SPACEX_SYNC_INTERVAL: ${SPACEX_SYNC_INTERVAL:-3600}
+      SERVER_HOST: 0.0.0.0
+      SERVER_PORT: 3000
     depends_on:
       db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     networks:
       - backend
@@ -50,21 +77,22 @@ services:
       context: ./services/php-web
     container_name: php_web
     environment:
-      JWST_HOST: https://api.jwstapi.com
-      JWST_API_KEY: baa96cdf-4a82-45f1-b986-d10a96826442
-      JWST_EMAIL: burnfeniks@yandex.ru
-      JWST_PROGRAM_ID: "2734"
-      ASTRO_APP_ID: "745a5e07-70ae-49fc-8014-6a509551f829"
-      ASTRO_APP_SECRET: "fe85a6503e3dd694a5d888effb336aefbbb5f54f348a134bd84126de5f69f536c5f05e75a55d395f41ae789b037bed48b7a505a690637acbf2108f5aefe3d934e0ab7b23bf469552d5eb6fc428f8ea981b02323cf3f6ec996ad7b6eab8312f786fd8c25eafc22cea532030c8dc3749c4"
-      APP_ENV: local
-      APP_DEBUG: "true"
-      APP_URL: http://localhost:8080
+      JWST_HOST: ${JWST_HOST:-https://api.jwstapi.com}
+      JWST_API_KEY: ${JWST_API_KEY}
+      JWST_EMAIL: ${JWST_EMAIL}
+      JWST_PROGRAM_ID: ${JWST_PROGRAM_ID:-2734}
+      ASTRO_APP_ID: ${ASTRO_APP_ID}
+      ASTRO_APP_SECRET: ${ASTRO_APP_SECRET}
+      RUST_ISS_URL: http://rust_iss:3000
+      APP_ENV: ${APP_ENV:-local}
+      APP_DEBUG: ${APP_DEBUG:-true}
+      APP_URL: ${APP_URL:-http://localhost:8080}
       DB_CONNECTION: pgsql
       DB_HOST: db
       DB_PORT: 5432
-      DB_DATABASE: monolith
-      DB_USERNAME: monouser
-      DB_PASSWORD: monopass
+      DB_DATABASE: ${DB_NAME:-cassiopeia}
+      DB_USERNAME: ${DB_USER:-cassiopeia_user}
+      DB_PASSWORD: ${DB_PASSWORD:-cassiopeia_pass}
     depends_on:
       db:
         condition: service_healthy
@@ -95,12 +123,12 @@ services:
     container_name: pascal_legacy
     environment:
       CSV_OUT_DIR: /data/csv
-      GEN_PERIOD_SEC: ${PAS_LEGACY_PERIOD:-300}
+      GEN_PERIOD_SEC: ${LEGACY_PERIOD:-300}
       PGHOST: db
       PGPORT: 5432
-      PGUSER: monouser
-      PGPASSWORD: monopass
-      PGDATABASE: monolith
+      PGUSER: ${DB_USER:-cassiopeia_user}
+      PGPASSWORD: ${DB_PASSWORD:-cassiopeia_pass}
+      PGDATABASE: ${DB_NAME:-cassiopeia}
     depends_on:
       db:
         condition: service_healthy
