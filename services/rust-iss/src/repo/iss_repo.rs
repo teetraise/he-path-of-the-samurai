@@ -99,7 +99,7 @@ impl IssRepo {
         .await?;
 
         if rows.len() < 2 {
-            return Ok(IssTrend::default());
+            return Ok(IssTrend::no_movement());
         }
 
         let t2: DateTime<Utc> = rows[0].get("fetched_at");
