@@ -24,7 +24,3 @@ tower-http = { version = "0.5", features = ["trace", "cors"] }
 uuid = { version = "1", features = ["v4", "serde"] }
 once_cell = "1"
 
-# Фиксируем версию home для совместимости с Rust 1.83
-[patch.crates-io]
-home = { version = "=0.5.9" }
-
