@@ -5,7 +5,10 @@ WORKDIR /app
 
 # кэш зависимостей
 COPY Cargo.toml ./
-RUN mkdir -p src && printf 'fn main() {}' > src/main.rs && cargo fetch
+RUN mkdir -p src && printf 'fn main() {}' > src/main.rs && \
+    cargo generate-lockfile && \
+    cargo update home --precise 0.5.9 && \
+    cargo fetch
 
 # исходники и сборка
 COPY src ./src

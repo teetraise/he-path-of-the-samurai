@@ -15,6 +15,8 @@ COPY Cargo.toml Cargo.lock* ./
 # Create dummy main to cache dependencies
 RUN mkdir -p src && \
     echo "fn main() {}" > src/main.rs && \
+    cargo generate-lockfile && \
+    cargo update home --precise 0.5.9 && \
     cargo build --release && \
     rm -rf src
 
