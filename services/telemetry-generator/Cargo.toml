@@ -11,7 +11,3 @@ rand = "0.8"
 anyhow = "1"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
-
-# Фиксируем версию home для совместимости с Rust 1.83
-[patch.crates-io]
-home = { version = "=0.5.9" }
