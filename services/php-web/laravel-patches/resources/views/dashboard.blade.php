@@ -195,6 +195,125 @@ document.addEventListener('DOMContentLoaded', async function () {
 });
 </script>
 
+{{-- ===== NASA OSDR Studies ===== --}}
+<div class="col-12 mt-3">
+  <div class="card shadow-sm">
+    <div class="card-header fw-semibold">NASA OSDR - Исследования</div>
+    <div class="card-body">
+      <div id="osdrList" class="small">Загрузка...</div>
+    </div>
+  </div>
+</div>
+
+{{-- ===== ISS Tracking Data ===== --}}
+<div class="col-12 mt-3">
+  <div class="card shadow-sm">
+    <div class="card-header fw-semibold">ISS - История позиций</div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-sm">
+          <thead>
+            <tr><th>ID</th><th>Время</th><th>Широта</th><th>Долгота</th><th>Высота (км)</th><th>Скорость (км/ч)</th></tr>
+          </thead>
+          <tbody id="issHistory">
+            <tr><td colspan="6" class="text-muted">Загрузка...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+{{-- ===== Telemetry Data ===== --}}
+<div class="col-12 mt-3">
+  <div class="card shadow-sm">
+    <div class="card-header fw-semibold">Telemetry - Системные данные</div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-sm">
+          <thead>
+            <tr><th>ID</th><th>Время</th><th>Напряжение (V)</th><th>Температура (C)</th><th>Источник</th></tr>
+          </thead>
+          <tbody id="telemetryData">
+            <tr><td colspan="5" class="text-muted">Загрузка...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Загрузка данных OSDR
+fetch('http://localhost:8081/osdr/list?limit=10')
+  .then(r => r.json())
+  .then(data => {
+    const items = data.items || [];
+    if (items.length === 0) {
+      document.getElementById('osdrList').innerHTML = '<p class="text-muted">Нет данных</p>';
+      return;
+    }
+    const html = items.map((item, i) => {
+      const raw = item.raw || {};
+      const keys = Object.keys(raw);
+      return `<div class="mb-2"><strong>${i+1}.</strong> Записей: ${keys.length} (${item.status || 'unknown'})</div>`;
+    }).join('');
+    document.getElementById('osdrList').innerHTML = html || '<p class="text-muted">Нет данных</p>';
+  })
+  .catch(() => {
+    document.getElementById('osdrList').innerHTML = '<p class="text-danger">Ошибка загрузки</p>';
+  });
+
+// Загрузка истории ISS
+fetch('http://localhost:8081/iss/trend')
+  .then(r => r.json())
+  .then(data => {
+    const points = data.points || [];
+    if (points.length === 0) {
+      document.getElementById('issHistory').innerHTML = '<tr><td colspan="6" class="text-muted">Нет данных</td></tr>';
+      return;
+    }
+    const html = points.slice(0, 10).map(p => `
+      <tr>
+        <td>${p.id || '-'}</td>
+        <td><small>${new Date(p.at).toLocaleString()}</small></td>
+        <td>${p.lat.toFixed(4)}</td>
+        <td>${p.lon.toFixed(4)}</td>
+        <td>${p.altitude ? p.altitude.toFixed(2) : '-'}</td>
+        <td>${p.velocity ? p.velocity.toFixed(0) : '-'}</td>
+      </tr>
+    `).join('');
+    document.getElementById('issHistory').innerHTML = html;
+  })
+  .catch(() => {
+    document.getElementById('issHistory').innerHTML = '<tr><td colspan="6" class="text-danger">Ошибка загрузки</td></tr>';
+  });
+
+// Загрузка телеметрии из БД
+fetch('http://localhost:8080/api/telemetry')
+  .then(r => r.json())
+  .then(data => {
+    const items = data.items || [];
+    if (items.length === 0) {
+      document.getElementById('telemetryData').innerHTML = '<tr><td colspan="5" class="text-muted">Нет данных</td></tr>';
+      return;
+    }
+    const html = items.slice(0, 10).map(t => `
+      <tr>
+        <td>${t.id}</td>
+        <td><small>${new Date(t.recorded_at).toLocaleString()}</small></td>
+        <td>${t.voltage ? t.voltage.toFixed(2) : '-'}</td>
+        <td>${t.temp ? t.temp.toFixed(1) : '-'}</td>
+        <td>${t.source_file || '-'}</td>
+      </tr>
+    `).join('');
+    document.getElementById('telemetryData').innerHTML = html;
+  })
+  .catch(() => {
+    document.getElementById('telemetryData').innerHTML = '<tr><td colspan="5" class="text-danger">Ошибка загрузки</td></tr>';
+  });
+</script>
+
 {{-- ===== Фото главной звездочки вселенной ===== --}}
 <div class="col-12 mt-3">
   <div class="card shadow-sm">

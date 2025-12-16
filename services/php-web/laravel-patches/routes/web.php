@@ -15,6 +15,21 @@ Route::get('/api/iss/trend', [\App\Http\Controllers\ProxyController::class, 'tre
 // JWST галерея (JSON)
 Route::get('/api/jwst/feed', [\App\Http\Controllers\DashboardController::class, 'jwstFeed']);
 Route::get("/api/astro/events", [\App\Http\Controllers\AstroController::class, "events"]);
-use App\Http\Controllers\AstroController;
-Route::get('/page/{slug}', [\App\Http\Controllers\CmsController::class, 'page']);
+
+// Telemetry API
+Route::get('/api/telemetry', function() {
+    try {
+        $items = \Illuminate\Support\Facades\DB::select("
+            SELECT id, recorded_at, voltage, temp, source_file
+            FROM telemetry_legacy
+            ORDER BY recorded_at DESC
+            LIMIT 20
+        ");
+        return response()->json(['items' => $items]);
+    } catch (\Throwable $e) {
+        return response()->json(['error' => $e->getMessage()], 500);
+    }
+});
+
+// CMS pages
 Route::get('/page/{slug}', [\App\Http\Controllers\CmsController::class, 'page']);
