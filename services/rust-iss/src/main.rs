@@ -20,12 +20,17 @@ async fn main() -> anyhow::Result<()> {
     let config = Config::from_env()?;
 
     // Connect to PostgreSQL with retry logic
-    tracing::info!("Connecting to PostgreSQL...");
+    tracing::info!("Connecting to PostgreSQL at {}...", &config.database_url);
     let pool = PgPoolOptions::new()
         .max_connections(10)
-        .acquire_timeout(std::time::Duration::from_secs(30))
+        .acquire_timeout(std::time::Duration::from_secs(5))
+        .connect_timeout(std::time::Duration::from_secs(10))
         .connect(&config.database_url)
-        .await?;
+        .await
+        .map_err(|e| {
+            tracing::error!("Failed to connect to PostgreSQL: {:?}", e);
+            e
+        })?;
 
     tracing::info!("Connected to PostgreSQL");
 
