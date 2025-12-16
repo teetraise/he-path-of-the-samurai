@@ -245,27 +245,25 @@ document.addEventListener('DOMContentLoaded', async function () {
 
 <script>
 // Загрузка данных OSDR
-fetch('http://localhost:8081/osdr/list?limit=10')
+fetch('/api/iss/last')
   .then(r => r.json())
   .then(data => {
-    const items = data.items || [];
-    if (items.length === 0) {
-      document.getElementById('osdrList').innerHTML = '<p class="text-muted">Нет данных</p>';
-      return;
-    }
-    const html = items.map((item, i) => {
-      const raw = item.raw || {};
-      const keys = Object.keys(raw);
-      return `<div class="mb-2"><strong>${i+1}.</strong> Записей: ${keys.length} (${item.status || 'unknown'})</div>`;
-    }).join('');
-    document.getElementById('osdrList').innerHTML = html || '<p class="text-muted">Нет данных</p>';
+    const payload = data.payload || {};
+    document.getElementById('osdrList').innerHTML = `
+      <div class="mb-2"><strong>Последняя позиция МКС:</strong></div>
+      <div class="small">Широта: ${payload.latitude || '-'}</div>
+      <div class="small">Долгота: ${payload.longitude || '-'}</div>
+      <div class="small">Высота: ${payload.altitude ? payload.altitude.toFixed(2) + ' км' : '-'}</div>
+      <div class="small">Скорость: ${payload.velocity ? payload.velocity.toFixed(0) + ' км/ч' : '-'}</div>
+    `;
   })
-  .catch(() => {
+  .catch(err => {
+    console.error('OSDR error:', err);
     document.getElementById('osdrList').innerHTML = '<p class="text-danger">Ошибка загрузки</p>';
   });
 
 // Загрузка истории ISS из БД через PHP
-fetch('http://localhost:8080/api/iss/history')
+fetch('/api/iss/history')
   .then(r => r.json())
   .then(data => {
     const items = data.items || [];
@@ -288,12 +286,13 @@ fetch('http://localhost:8080/api/iss/history')
     }).join('');
     document.getElementById('issHistory').innerHTML = html;
   })
-  .catch(() => {
+  .catch(err => {
+    console.error('ISS history error:', err);
     document.getElementById('issHistory').innerHTML = '<tr><td colspan="6" class="text-danger">Ошибка загрузки</td></tr>';
   });
 
 // Загрузка телеметрии из БД
-fetch('http://localhost:8080/api/telemetry')
+fetch('/api/telemetry')
   .then(r => r.json())
   .then(data => {
     const items = data.items || [];
@@ -305,14 +304,15 @@ fetch('http://localhost:8080/api/telemetry')
       <tr>
         <td>${t.id}</td>
         <td><small>${new Date(t.recorded_at).toLocaleString()}</small></td>
-        <td>${t.voltage ? t.voltage.toFixed(2) : '-'}</td>
-        <td>${t.temp ? t.temp.toFixed(1) : '-'}</td>
+        <td>${parseFloat(t.voltage).toFixed(2)}</td>
+        <td>${parseFloat(t.temp).toFixed(1)}</td>
         <td>${t.source_file || '-'}</td>
       </tr>
     `).join('');
     document.getElementById('telemetryData').innerHTML = html;
   })
-  .catch(() => {
+  .catch(err => {
+    console.error('Telemetry error:', err);
     document.getElementById('telemetryData').innerHTML = '<tr><td colspan="5" class="text-danger">Ошибка загрузки</td></tr>';
   });
 </script>
