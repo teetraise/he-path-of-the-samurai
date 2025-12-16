@@ -49,9 +49,14 @@ curl http://localhost:8081/iss/trend | jq .
 curl http://localhost:8081/space/summary | jq .
 # Все источники данных в одном запросе
 
-# 5. Астрономические события (ДЕМО режим)
-curl "http://localhost:8080/api/astro/events?demo=true" | jq .
-# Показывает тестовые события (затмения, полнолуния)
+# 5. Астрономические события (реальный API)
+curl "http://localhost:8080/api/astro/events?lat=55.7558&lon=37.6176&days=365" | jq .
+# Москва: 12 августа 2026 - частичное солнечное затмение (80% obscuration)
+# API возвращает редкие события (затмения, транзиты)
+# Попробуйте другие координаты:
+#   Нью-Йорк: lat=40.7128, lon=-74.0060
+#   Токио: lat=35.6762, lon=139.6503
+#   Сидней: lat=-33.8688, lon=151.2093
 
 # 6. Проверка кэширования Redis
 docker exec iss_redis redis-cli -a redispass --no-auth-warning KEYS "*"
