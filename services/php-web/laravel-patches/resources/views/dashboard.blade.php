@@ -264,25 +264,28 @@ fetch('http://localhost:8081/osdr/list?limit=10')
     document.getElementById('osdrList').innerHTML = '<p class="text-danger">Ошибка загрузки</p>';
   });
 
-// Загрузка истории ISS
-fetch('http://localhost:8081/iss/trend')
+// Загрузка истории ISS из БД через PHP
+fetch('http://localhost:8080/api/iss/history')
   .then(r => r.json())
   .then(data => {
-    const points = data.points || [];
-    if (points.length === 0) {
+    const items = data.items || [];
+    if (items.length === 0) {
       document.getElementById('issHistory').innerHTML = '<tr><td colspan="6" class="text-muted">Нет данных</td></tr>';
       return;
     }
-    const html = points.slice(0, 10).map(p => `
-      <tr>
-        <td>${p.id || '-'}</td>
-        <td><small>${new Date(p.at).toLocaleString()}</small></td>
-        <td>${p.lat.toFixed(4)}</td>
-        <td>${p.lon.toFixed(4)}</td>
-        <td>${p.altitude ? p.altitude.toFixed(2) : '-'}</td>
-        <td>${p.velocity ? p.velocity.toFixed(0) : '-'}</td>
-      </tr>
-    `).join('');
+    const html = items.map(item => {
+      const p = item.payload;
+      return `
+        <tr>
+          <td>${item.id}</td>
+          <td><small>${new Date(item.fetched_at).toLocaleString()}</small></td>
+          <td>${p.latitude ? parseFloat(p.latitude).toFixed(4) : '-'}</td>
+          <td>${p.longitude ? parseFloat(p.longitude).toFixed(4) : '-'}</td>
+          <td>${p.altitude ? parseFloat(p.altitude).toFixed(2) : '-'}</td>
+          <td>${p.velocity ? parseFloat(p.velocity).toFixed(0) : '-'}</td>
+        </tr>
+      `;
+    }).join('');
     document.getElementById('issHistory').innerHTML = html;
   })
   .catch(() => {

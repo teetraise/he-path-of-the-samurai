@@ -31,5 +31,23 @@ Route::get('/api/telemetry', function() {
     }
 });
 
+// ISS History API
+Route::get('/api/iss/history', function() {
+    try {
+        $items = \Illuminate\Support\Facades\DB::select("
+            SELECT id, fetched_at, payload
+            FROM iss_fetch_log
+            ORDER BY fetched_at DESC
+            LIMIT 10
+        ");
+        foreach ($items as &$item) {
+            $item->payload = json_decode($item->payload, true);
+        }
+        return response()->json(['items' => $items]);
+    } catch (\Throwable $e) {
+        return response()->json(['error' => $e->getMessage()], 500);
+    }
+});
+
 // CMS pages
 Route::get('/page/{slug}', [\App\Http\Controllers\CmsController::class, 'page']);
