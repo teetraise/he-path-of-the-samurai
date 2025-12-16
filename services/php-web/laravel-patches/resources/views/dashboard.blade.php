@@ -350,13 +350,27 @@ document.addEventListener('DOMContentLoaded', async function () {
     </script>
 
 
-{{-- ===== Данный блок ===== --}}
+{{-- ===== Welcome Message ===== --}}
 <div class="card mt-3">
-  <div class="card-header fw-semibold">CMS</div>
+  <div class="card-header fw-semibold">Приветствие</div>
   <div class="card-body">
     @php
       try {
-        // «плохо»: запрос из Blade, без кэша, без репозитория
+        $___b = DB::selectOne("SELECT content FROM cms_blocks WHERE slug='welcome_message' AND is_active = TRUE LIMIT 1");
+        echo $___b ? $___b->content : '<div class="text-muted">блок не найден</div>';
+      } catch (\Throwable $e) {
+        echo '<div class="text-danger">ошибка БД: '.e($e->getMessage()).'</div>';
+      }
+    @endphp
+  </div>
+</div>
+
+{{-- ===== Dashboard Experiment Info ===== --}}
+<div class="card mt-3">
+  <div class="card-header fw-semibold">Статус эксперимента</div>
+  <div class="card-body">
+    @php
+      try {
         $___b = DB::selectOne("SELECT content FROM cms_blocks WHERE slug='dashboard_experiment' AND is_active = TRUE LIMIT 1");
         echo $___b ? $___b->content : '<div class="text-muted">блок не найден</div>';
       } catch (\Throwable $e) {
@@ -366,14 +380,13 @@ document.addEventListener('DOMContentLoaded', async function () {
   </div>
 </div>
 
-{{-- ===== CMS-блок из БД (нарочно сырая вставка) ===== --}}
+{{-- ===== Footer Info ===== --}}
 <div class="card mt-3">
-  <div class="card-header fw-semibold">CMS — блок из БД</div>
+  <div class="card-header fw-semibold">Источники данных</div>
   <div class="card-body">
     @php
       try {
-        // «плохо»: запрос из Blade, без кэша, без репозитория
-        $___b = DB::selectOne("SELECT content FROM cms_blocks WHERE slug='dashboard_experiment' AND is_active = TRUE LIMIT 1");
+        $___b = DB::selectOne("SELECT content FROM cms_blocks WHERE slug='footer_info' AND is_active = TRUE LIMIT 1");
         echo $___b ? $___b->content : '<div class="text-muted">блок не найден</div>';
       } catch (\Throwable $e) {
         echo '<div class="text-danger">ошибка БД: '.e($e->getMessage()).'</div>';
@@ -398,19 +411,3 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 </script>
-
-{{-- ===== CMS-блок из БД (нарочно сырая вставка) ===== --}}
-<div class="card mt-3">
-  <div class="card-header fw-semibold">CMS — блок из БД</div>
-  <div class="card-body">
-    @php
-      try {
-        // «плохо»: запрос из Blade, без кэша, без репозитория
-        $___b = DB::selectOne("SELECT content FROM cms_blocks WHERE slug='dashboard_experiment' AND is_active = TRUE LIMIT 1");
-        echo $___b ? $___b->content : '<div class="text-muted">блок не найден</div>';
-      } catch (\Throwable $e) {
-        echo '<div class="text-danger">ошибка БД: '.e($e->getMessage()).'</div>';
-      }
-    @endphp
-  </div>
-</div>
