@@ -204,10 +204,10 @@ document.addEventListener('DOMContentLoaded', async function () {
             <h5 class="card-title m-0">Астрономические события (AstronomyAPI)</h5>
             <form id="astroForm" class="row g-2 align-items-center">
               <div class="col-auto">
-                <input type="number" step="0.0001" class="form-control form-control-sm" name="lat" value="55.7558" placeholder="lat">
+                <input type="number" step="0.0001" class="form-control form-control-sm" name="lat" value="55.7558" placeholder="lat" title="Москва: 55.7558">
               </div>
               <div class="col-auto">
-                <input type="number" step="0.0001" class="form-control form-control-sm" name="lon" value="37.6176" placeholder="lon">
+                <input type="number" step="0.0001" class="form-control form-control-sm" name="lon" value="37.6176" placeholder="lon" title="Москва: 37.6176">
               </div>
               <div class="col-auto">
                 <input type="number" min="1" max="366" class="form-control form-control-sm" name="days" value="365" style="width:90px" title="дней">
@@ -253,14 +253,61 @@ document.addEventListener('DOMContentLoaded', async function () {
 
         function collect(root){
           const rows = [];
-          (function dfs(x){
-            if (!x || typeof x !== 'object') return;
-            if (Array.isArray(x)) { x.forEach(dfs); return; }
-            if ((x.type || x.event_type || x.category) && (x.name || x.body || x.object || x.target)) {
-              rows.push(normalize(x));
-            }
-            Object.values(x).forEach(dfs);
-          })(root);
+
+          // Обработка структуры AstronomyAPI: data.table.rows[].cells[]
+          if (root?.data?.table?.rows) {
+            root.data.table.rows.forEach(row => {
+              const bodyName = row.entry?.name || 'Unknown';
+              const bodyId = row.entry?.id || '';
+
+              if (Array.isArray(row.cells)) {
+                row.cells.forEach(cell => {
+                  // Извлекаем информацию о событии
+                  const type = cell.type || 'unknown';
+                  let when = '';
+                  let extra = '';
+
+                  // Попытка извлечь время события
+                  if (cell.eventHighlights?.peak?.date) {
+                    when = cell.eventHighlights.peak.date;
+                  } else if (cell.eventHighlights?.partialStart?.date) {
+                    when = cell.eventHighlights.partialStart.date;
+                  } else if (cell.eventHighlights?.totalStart?.date) {
+                    when = cell.eventHighlights.totalStart.date;
+                  } else if (cell.date) {
+                    when = cell.date;
+                  } else if (cell.time) {
+                    when = cell.time;
+                  }
+
+                  // Дополнительная информация
+                  if (cell.extraInfo?.obscuration) {
+                    extra = `Obscuration: ${(cell.extraInfo.obscuration * 100).toFixed(0)}%`;
+                  } else if (cell.extra) {
+                    extra = cell.extra;
+                  }
+
+                  rows.push({
+                    name: bodyName,
+                    type: type,
+                    when: when,
+                    extra: extra
+                  });
+                });
+              }
+            });
+          } else {
+            // Fallback: старая логика для других форматов
+            (function dfs(x){
+              if (!x || typeof x !== 'object') return;
+              if (Array.isArray(x)) { x.forEach(dfs); return; }
+              if ((x.type || x.event_type || x.category) && (x.name || x.body || x.object || x.target)) {
+                rows.push(normalize(x));
+              }
+              Object.values(x).forEach(dfs);
+            })(root);
+          }
+
           return rows;
         }
 
