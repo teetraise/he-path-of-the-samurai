@@ -23,8 +23,7 @@ async fn main() -> anyhow::Result<()> {
     tracing::info!("Connecting to PostgreSQL at {}...", &config.database_url);
     let pool = PgPoolOptions::new()
         .max_connections(10)
-        .acquire_timeout(std::time::Duration::from_secs(5))
-        .connect_timeout(std::time::Duration::from_secs(10))
+        .acquire_timeout(std::time::Duration::from_secs(10))
         .connect(&config.database_url)
         .await
         .map_err(|e| {
