@@ -4,6 +4,7 @@ use sqlx::{PgPool, Row};
 use tracing::error;
 
 use crate::domain::SpaceCache;
+use crate::errors::ApiError;
 
 pub struct SpaceRepo {
     pool: PgPool,
@@ -15,7 +16,7 @@ impl SpaceRepo {
     }
 
     /// Initialize space_cache table
-    pub async fn init_tables(&self) -> Result<(), sqlx::Error> {
+    pub async fn init_tables(&self) -> Result<(), ApiError> {
         sqlx::query(
             "CREATE TABLE IF NOT EXISTS space_cache (
                 id BIGSERIAL PRIMARY KEY,
