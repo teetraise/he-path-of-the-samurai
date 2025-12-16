@@ -411,3 +411,12 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 </script>
+
+{{-- ===== Фото главной звездочки вселенной ===== --}}
+<div class="card mt-3">
+  <div class="card-header fw-semibold text-center">⭐ Фото главной звёздочки вселенной ⭐</div>
+  <div class="card-body text-center">
+    <img src="/images/mainstar.jpg" alt="Главная звёздочка вселенной" class="img-fluid rounded shadow" style="max-width: 400px; max-height: 500px; object-fit: cover;">
+    <p class="mt-3 text-muted fst-italic">Наш любимый преподаватель, освещающий путь к знаниям</p>
+  </div>
+</div>
