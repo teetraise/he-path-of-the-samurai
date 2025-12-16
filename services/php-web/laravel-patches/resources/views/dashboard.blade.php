@@ -199,11 +199,10 @@ document.addEventListener('DOMContentLoaded', async function () {
 <div class="col-12 mt-3">
   <div class="card shadow-sm">
     <div class="card-header fw-semibold text-center bg-warning bg-opacity-10">
-      ⭐ Фото главной звёздочки вселенной ⭐
+      Фото главной звёздочки вселенной
     </div>
     <div class="card-body text-center py-4">
       <img src="/images/mainstar.jpg" alt="Главная звёздочка вселенной" class="img-fluid rounded shadow-lg" style="max-width: 500px; max-height: 600px; object-fit: cover; border: 3px solid #ffc107;">
-      <p class="mt-4 mb-0 text-muted fst-italic fs-5">Наш любимый преподаватель, освещающий путь к знаниям ✨</p>
     </div>
   </div>
 </div>
