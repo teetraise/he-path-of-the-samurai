@@ -210,7 +210,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 <input type="number" step="0.0001" class="form-control form-control-sm" name="lon" value="37.6176" placeholder="lon">
               </div>
               <div class="col-auto">
-                <input type="number" min="1" max="30" class="form-control form-control-sm" name="days" value="7" style="width:90px" title="дней">
+                <input type="number" min="1" max="366" class="form-control form-control-sm" name="days" value="365" style="width:90px" title="дней">
               </div>
               <div class="col-auto">
                 <button class="btn btn-sm btn-primary" type="submit">Показать</button>
